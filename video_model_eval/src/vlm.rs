@@ -5,7 +5,7 @@ use crate::models::Inference;
 use anyhow::{Result, anyhow};
 use std::env;
 use std::fs;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use serde::{Deserialize, Serialize};
 
@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 /// Lista de modelos VLM multimodal a comparar en OpenRouter.
 pub const VLM_MODELS: &[&str] = &[
     "reka/reka-edge",
-    "google/gemini-flash-1.5",
+    "google/gemini-2.0-flash-lite-001",
     "meta-llama/llama-3.2-11b-vision-instruct",
 ];
 
@@ -99,7 +99,10 @@ pub async fn infer(text: &str, frame_path: &str, model: &str) -> Result<Inferenc
         }],
     };
 
-    let client = reqwest::Client::new();
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(60))
+        .build()
+        .unwrap_or_default();
     let start = Instant::now();
     let resp = client
         .post(&url)
@@ -154,7 +157,7 @@ pub async fn infer_all_models(text: &str, frame_path: &str) -> Vec<(String, Resu
 /// - Nivel de detalle: ¿es lo suficientemente descriptivo?
 pub async fn judge_quality(caption: &str, frame_path: &str) -> Result<u8> {
     let judge_model = env::var("VLM_JUDGE_MODEL")
-        .unwrap_or_else(|_| "google/gemini-flash-1.5".to_string());
+        .unwrap_or_else(|_| "google/gemini-2.0-flash-lite-001".to_string());
 
     let api_key = env::var("OPENROUTER_API_KEY")
         .map_err(|_| anyhow!("OPENROUTER_API_KEY not set"))?;
@@ -195,7 +198,10 @@ pub async fn judge_quality(caption: &str, frame_path: &str) -> Result<u8> {
         }],
     };
 
-    let client = reqwest::Client::new();
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(60))
+        .build()
+        .unwrap_or_default();
     let resp = client
         .post(&url)
         .bearer_auth(api_key)

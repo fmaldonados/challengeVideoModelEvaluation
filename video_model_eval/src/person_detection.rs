@@ -5,14 +5,14 @@
 use crate::models::PersonDetection;
 use anyhow::{Result, anyhow};
 use std::env;
-use std::time::Instant;
+use std::time::{Duration, Instant};
 use serde::{Deserialize, Serialize};
 
 /// Models available for person detection.
 /// Index 0 is the default when PERSON_DETECTION_MODEL is not set.
 pub const DETECTION_MODELS: &[&str] = &[
     "reka/reka-edge",
-    "google/gemini-flash-1.5",
+    "google/gemini-2.0-flash-lite-001",
 ];
 
 // ── Structs para el request a OpenRouter ──────────────────────────────────────
@@ -131,7 +131,10 @@ pub async fn detect_with_model(frame_path: &str, model: &str) -> Result<Vec<Pers
         }],
     };
 
-    let client = reqwest::Client::new();
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(60))
+        .build()
+        .unwrap_or_default();
     let start = Instant::now();
     let resp = client
         .post(url)
