@@ -1,0 +1,7 @@
+# Rust
+/video_model_eval/target/
+**/*.rs.bk
+Cargo.lock
+
+# Docs
+docs/
