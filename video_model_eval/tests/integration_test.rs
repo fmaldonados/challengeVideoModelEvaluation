@@ -3,6 +3,7 @@
 #[cfg(test)]
 mod tests {
     use video_model_eval::person_detection;
+    use video_model_eval::evaluator;
     use std::env;
 
     fn load_env() {
@@ -24,6 +25,10 @@ mod tests {
         assert!(result.is_ok(), "detect() falló: {:?}", result.err());
         let detections = result.unwrap();
         assert!(!detections.is_empty(), "Se esperaban personas pero no se detectó ninguna");
+        // Validar campos nuevos
+        let first = &detections[0];
+        assert!(first.person_count > 0, "person_count debe ser > 0 cuando hay detecciones");
+        assert!(!first.model_name.is_empty(), "model_name no debe estar vacío");
     }
 
     /// Test negativo: frame sin personas (teatro vacío, pantalla).
@@ -55,5 +60,42 @@ mod tests {
         load_env();
         let result = person_detection::detect("tests/data/nonexistent.jpg").await;
         assert!(result.is_err(), "debería fallar con archivo inexistente");
+    }
+
+    /// Valida que DETECTION_MODELS tenga al menos 2 modelos configurados
+    #[test]
+    fn test_detection_models_list() {
+        assert!(
+            person_detection::DETECTION_MODELS.len() >= 2,
+            "Se requieren al menos 2 modelos de detección para comparación"
+        );
+        for model in person_detection::DETECTION_MODELS {
+            assert!(!model.is_empty(), "Ningún modelo debe estar vacío");
+        }
+    }
+
+    /// Valida el cálculo de MAE con datos sintéticos conocidos
+    #[test]
+    fn test_calculate_mae_synthetic() {
+        // MAE([3, 1, 0], [2, 1, 0]) = (1 + 0 + 0) / 3 = 0.333...
+        let predictions   = vec![3u32, 1, 0];
+        let ground_truth  = vec![2u32, 1, 0];
+        let mae = evaluator::calculate_mae(&predictions, &ground_truth);
+        assert!((mae - 1.0 / 3.0).abs() < 1e-5, "MAE esperado ~0.333, obtenido {}", mae);
+    }
+
+    /// Valida que MAE con predicción perfecta sea 0
+    #[test]
+    fn test_calculate_mae_perfect() {
+        let counts = vec![0u32, 2, 5];
+        let mae = evaluator::calculate_mae(&counts, &counts);
+        assert_eq!(mae, 0.0, "MAE debe ser 0.0 con predicción perfecta");
+    }
+
+    /// Valida que MAE con slices vacíos devuelva 0
+    #[test]
+    fn test_calculate_mae_empty() {
+        let mae = evaluator::calculate_mae(&[], &[]);
+        assert_eq!(mae, 0.0, "MAE debe ser 0.0 con slices vacíos");
     }
 }

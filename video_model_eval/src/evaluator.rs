@@ -17,3 +17,22 @@ pub fn score(_model_name: &str, _predictions: Vec<f32>, _ground_truth: Vec<f32>)
         cost_estimate: 0.1,
     })
 }
+
+/// Calcula el Mean Absolute Error entre conteos predichos y ground truth.
+/// Ambos slices deben tener la misma longitud.
+pub fn calculate_mae(predictions: &[u32], ground_truth: &[u32]) -> f32 {
+    assert_eq!(
+        predictions.len(),
+        ground_truth.len(),
+        "predictions and ground_truth must have the same length"
+    );
+    if predictions.is_empty() {
+        return 0.0;
+    }
+    let sum: f32 = predictions
+        .iter()
+        .zip(ground_truth.iter())
+        .map(|(&p, &g)| (p as f32 - g as f32).abs())
+        .sum();
+    sum / predictions.len() as f32
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "image_path": "tests/data/persons_frame.jpg",
+    "person_count": 2,
+    "notes": "Mujer en escenario + camarógrafo en primer plano (frame extraído de -3t1rj8g6yg.mp4 ~4.28s)"
+  },
+  {
+    "image_path": "tests/data/no_persons_frame.jpg",
+    "person_count": 0,
+    "notes": "Butacas vacías y pantalla, sin personas visibles (frame extraído de -3t1rj8g6yg.mp4 ~4:10)"
+  }
+]

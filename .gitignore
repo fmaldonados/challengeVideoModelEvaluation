@@ -3,5 +3,9 @@
 **/*.rs.bk
 Cargo.lock
 
+# Credentials
+.env
+**/.env
+
 # Docs
 docs/
