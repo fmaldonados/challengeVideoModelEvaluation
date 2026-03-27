@@ -7,5 +7,9 @@ Cargo.lock
 .env
 **/.env
 
-# Docs
-docs/
+# Docs - ignore internal planning docs, track only deliverables
+docs/*
+!docs/architecture.md
+!docs/reports
+docs/reports/*
+!docs/reports/summary.md
